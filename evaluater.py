@@ -8,7 +8,7 @@ def evaluate(model, testset, args):
     model.eval()
     num = args.geo_character_num
     dataloader = DataLoader(testset, batch_size=args.test_batch_size, collate_fn = lambda e: my_collate_fn(e, num=num))
-    batch_iterator = tqdm(enumerate(dataloader), total=len(dataloader), leave=False)
+    batch_iterator = tqdm(enumerate(dataloader), total=len(dataloader), leave=False, desc="evaluate")
     
     K = [5, 10, 50]
     hit_rate = [0 for _ in range(num+1+len(K))]
