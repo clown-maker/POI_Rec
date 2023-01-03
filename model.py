@@ -95,7 +95,7 @@ class LocPredictor(nn.Module):
                     tgt_pos_emb = self.pos_emb(torch.LongTensor(positions).to(self.dev))
                     tgt += tgt_pos_emb
                 else:
-                    tgt += self.pos_emb(1).repeat_interleave(tgt_geo.size(1))
+                    tgt += self.pos_emb(1).repeat_interleave(tgt_geo.size(1), dim=1)
             if self.config.use_tgt_seg:
                 segments = np.tile(np.array(range(tgt_geo.size(1))), [tgt_geo.size(0), 1])
                 tgt_seg_emb = self.seg_emb(torch.LongTensor(segments).to(self.dev))
