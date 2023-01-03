@@ -77,27 +77,27 @@ class LocPredictor(nn.Module):
                 if self.config.learned_pos_embedding:
                     pad_pos_emb = self.pos_emb(torch.zeros(tgt_geo.size(0), 1).long().to(self.dev))
                     positions = np.tile(np.array(range(1, tgt_len+1)), [tgt_geo.size(0), 1])
-                    tgt_pos_emb = self.pos_emb(torch.LongTensor(positions).to(self.dev)).repeat_interleave(self.geo_character_num+1, dim=1)
+                    tgt_pos_emb = self.pos_emb(torch.LongTensor(positions).to(self.dev)).repeat_interleave(self.geo_character_num+1, dim=1)[:, :-1, :]
                     tgt += torch.concat([pad_pos_emb, tgt_pos_emb], dim=1)
                 else:
                     pad_pos_emb = self.pos_emb(1)
-                    tgt_pos_emb = self.pos_emb(tgt_len).to(self.dev).repeat_interleave(self.geo_character_num+1, dim=1) 
+                    tgt_pos_emb = self.pos_emb(tgt_len).to(self.dev).repeat_interleave(self.geo_character_num+1, dim=1)[:, :-1, :] 
                     tgt += torch.concat([pad_pos_emb, tgt_pos_emb], dim=1)  
             if self.config.use_tgt_seg:   
                 pad_seg_emb = self.seg_emb(torch.zeros(tgt_geo.size(0), 1).long().to(self.dev))
                 segments = np.tile(np.array(range(1, self.geo_character_num+2)), [tgt_geo.size(0), tgt_len])
-                tgt_seg_emb = self.seg_emb(torch.LongTensor(segments).to(self.dev))
+                tgt_seg_emb = self.seg_emb(torch.LongTensor(segments).to(self.dev))[:, :-1, :]
                 tgt += torch.concat([pad_seg_emb, tgt_seg_emb], dim=1)     
         else:
             if self.config.use_tgt_pos: 
                 if self.config.learned_pos_embedding:
-                    positions = np.tile(np.array(range(tgt_geo.size(1))), [tgt_geo.size(0), 1])
+                    positions = np.tile(np.array([0] + [1] * (tgt_geo.size(1)-1)), [tgt_geo.size(0), 1])
                     tgt_pos_emb = self.pos_emb(torch.LongTensor(positions).to(self.dev))
                     tgt += tgt_pos_emb
                 else:
                     tgt += self.pos_emb(1).repeat_interleave(tgt_geo.size(1))
             if self.config.use_tgt_seg:
-                segments = np.tile(np.array([0] + [1] * (tgt_geo.size(1)-1) ), [tgt_geo.size(0), 1])
+                segments = np.tile(np.array(range(tgt_geo.size(1))), [tgt_geo.size(0), 1])
                 tgt_seg_emb = self.seg_emb(torch.LongTensor(segments).to(self.dev))
                 tgt += tgt_seg_emb
         tgt = self.emb_dropout(tgt)  
